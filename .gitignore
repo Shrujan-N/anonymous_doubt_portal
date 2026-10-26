@@ -1,3 +1,4 @@
+apache-maven-3.9.6/
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**
