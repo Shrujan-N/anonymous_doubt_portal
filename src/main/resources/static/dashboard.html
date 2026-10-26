@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Doubt Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">DoubtPortal RBAC Engine</a>
+            <div class="d-flex align-items-center">
+                <span id="userInfo" class="text-white me-3">Role: Guest</span>
+                <select id="roleSwitcher" class="form-select form-select-sm" onchange="switchRole(this.value)">
+                    <option value="STUDENT">View as Student</option>
+                    <option value="TEACHER">View as Teacher</option>
+                    <option value="ADMIN">View as Admin</option>
+                </select>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div id="roleAlert" class="alert alert-info shadow-sm" role="alert">
+            Active Mode: <strong>Student View</strong> (Ask doubts &amp; post peer answers)
+        </div>
+        <div id="errorAlert" class="alert alert-danger shadow-sm d-none" role="alert"></div>
+        <div class="row">
+            <div class="col-md-5">
+                <div id="postDoubtCard" class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white fw-bold">Post a New Doubt</div>
+                    <div class="card-body">
+                        <form id="doubtForm">
+                            <div class="mb-3">
+                                <label class="form-label" for="title">Doubt Title</label>
+                                <input type="text" id="title" class="form-control" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="subjectId">Subject</label>
+                                <select id="subjectId" class="form-select">
+                                    <option value="1">Database Management Systems (UE21CS301)</option>
+                                    <option value="2">Digital Electronics (UE21EC201)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="description">Description</label>
+                                <textarea id="description" class="form-control" rows="3" required></textarea>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="isAnonymous">
+                                <label class="form-check-label" for="isAnonymous">Hide my identity</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Post Doubt</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">MongoDB NoSQL Vector Search</div>
+                    <div class="card-body">
+                        <div class="input-group mb-3">
+                            <input type="text" id="tagSearchInput" class="form-control" placeholder="Search by tag">
+                            <button class="btn btn-outline-success" onclick="searchVectorsByTag()">Search NoSQL</button>
+                        </div>
+                        <div id="vectorSearchResults" class="small text-muted"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Classroom Doubts &amp; Answers</h5>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="loadAllDoubts()">Reload Thread</button>
+                    </div>
+                    <div class="card-body">
+                        <div id="doubtsContainer" class="accordion">
+                            <div class="text-center text-muted">Loading live thread...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="/js/app.js"></script>
+</body>
+</html>
