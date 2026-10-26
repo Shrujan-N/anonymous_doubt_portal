@@ -11,9 +11,14 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand fw-bold" href="#">DoubtPortal RBAC Engine</a>
-            <div class="d-flex align-items-center">
-                <span id="userInfo" class="text-white me-3">Role: Guest</span>
-                <select id="roleSwitcher" class="form-select form-select-sm" onchange="switchRole(this.value)">
+            <div class="d-flex align-items-center gap-2">
+                <span id="userInfo" class="badge bg-secondary px-3 py-2">Role: STUDENT (Rahul Sharma #1)</span>
+                <select id="studentSelector" class="form-select form-select-sm" style="width: auto;" onchange="switchStudentUser(this.value)">
+                    <option value="1">Student #1: Rahul Sharma (CSE)</option>
+                    <option value="2">Student #2: Ananya Rao (ECE)</option>
+                    <option value="3">Student #3: Vikram Verma (CSE)</option>
+                </select>
+                <select id="roleSwitcher" class="form-select form-select-sm" style="width: auto;" onchange="switchRole(this.value)">
                     <option value="STUDENT">View as Student</option>
                     <option value="TEACHER">View as Teacher</option>
                     <option value="ADMIN">View as Admin</option>
@@ -24,49 +29,78 @@
 
     <div class="container my-4">
         <div id="roleAlert" class="alert alert-info shadow-sm" role="alert">
-            Active Mode: <strong>Student View</strong> (Ask doubts &amp; post peer answers)
+            Active Mode: <strong>Student View</strong> (Ask doubts, post peer answers &amp; upvote)
         </div>
+        <div id="successAlert" class="alert alert-success shadow-sm d-none" role="alert"></div>
         <div id="errorAlert" class="alert alert-danger shadow-sm d-none" role="alert"></div>
+
         <div class="row">
             <div class="col-md-5">
+                <!-- Student Only: Post a New Doubt -->
                 <div id="postDoubtCard" class="card shadow-sm mb-4">
-                    <div class="card-header bg-primary text-white fw-bold">Post a New Doubt</div>
+                    <div class="card-header bg-primary text-white fw-bold">Post a New Doubt (sp_SubmitDoubt)</div>
                     <div class="card-body">
                         <form id="doubtForm">
                             <div class="mb-3">
                                 <label class="form-label" for="title">Doubt Title</label>
-                                <input type="text" id="title" class="form-control" required>
+                                <input type="text" id="title" class="form-control" placeholder="e.g., What is 3NF Normalization?" required>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label" for="subjectId">Subject</label>
-                                <select id="subjectId" class="form-select">
-                                    <option value="1">Database Management Systems (UE21CS301)</option>
-                                    <option value="2">Digital Electronics (UE21EC201)</option>
-                                </select>
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label class="form-label" for="subjectId">Subject</label>
+                                    <select id="subjectId" class="form-select">
+                                        <option value="1">Database Management Systems (UE21CS301)</option>
+                                        <option value="2">Digital Electronics (UE21EC201)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label" for="priority">Priority</label>
+                                    <select id="priority" class="form-select">
+                                        <option value="High">High</option>
+                                        <option value="Medium" selected>Medium</option>
+                                        <option value="Low">Low</option>
+                                    </select>
+                                </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label" for="description">Description</label>
-                                <textarea id="description" class="form-control" rows="3" required></textarea>
+                                <textarea id="description" class="form-control" rows="3" placeholder="Describe your question..." required></textarea>
                             </div>
                             <div class="form-check mb-3">
                                 <input class="form-check-input" type="checkbox" id="isAnonymous">
-                                <label class="form-check-label" for="isAnonymous">Hide my identity</label>
+                                <label class="form-check-label" for="isAnonymous">Hide my identity (Post Anonymously)</label>
                             </div>
                             <button type="submit" class="btn btn-primary w-100">Post Doubt</button>
                         </form>
                     </div>
                 </div>
+
+                <!-- MongoDB NoSQL Vector Search -->
                 <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-success text-white">MongoDB NoSQL Vector Search</div>
+                    <div class="card-header bg-success text-white fw-bold">MongoDB NoSQL Vector Search</div>
                     <div class="card-body">
-                        <div class="input-group mb-3">
-                            <input type="text" id="tagSearchInput" class="form-control" placeholder="Search by tag">
-                            <button class="btn btn-outline-success" onclick="searchVectorsByTag()">Search NoSQL</button>
+                        <div class="input-group mb-2">
+                            <input type="text" id="tagSearchInput" class="form-control" placeholder="Search tag or keyword (e.g. SQL, B-Tree) or leave empty for all">
+                            <button class="btn btn-success" type="button" onclick="searchVectorsByTag()">Search NoSQL</button>
                         </div>
-                        <div id="vectorSearchResults" class="small text-muted"></div>
+                        <div id="vectorSearchResults" class="small text-muted mt-2">Click "Search NoSQL" to view vector embeddings.</div>
+                    </div>
+                </div>
+
+                <!-- SQL CTE Analytics Leaderboard -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Peer Leaderboard (SQL CTE &amp; Function)</span>
+                        <button class="btn btn-sm btn-outline-light" onclick="loadLeaderboard()">Refresh</button>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="leaderboardContainer" class="list-group list-group-flush small">
+                            <div class="p-3 text-muted text-center">Loading leaderboard...</div>
+                        </div>
                     </div>
                 </div>
             </div>
+
             <div class="col-md-7">
                 <div class="card shadow-sm">
                     <div class="card-header bg-white d-flex justify-content-between align-items-center">
@@ -82,6 +116,8 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/js/app.js"></script>
 </body>
 </html>
