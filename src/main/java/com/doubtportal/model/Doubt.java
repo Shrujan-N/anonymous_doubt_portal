@@ -32,6 +32,9 @@ public class Doubt {
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "deleted_by_admin_id")
+    private Long deletedByAdminId;
+
     public Doubt() {}
 
     public Long getDoubtId() { return doubtId; }
@@ -50,4 +53,7 @@ public class Doubt {
     public void setPriority(String priority) { this.priority = priority; }
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public Long getDeletedByAdminId() { return deletedByAdminId; }
+    public void setDeletedByAdminId(Long deletedByAdminId) { this.deletedByAdminId = deletedByAdminId; }
 }

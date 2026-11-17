@@ -4,6 +4,15 @@ target/
 !**/src/main/**
 !**/src/test/**
 
+# Local secrets & overrides
+src/main/resources/application-local.properties
+
+# Next.js frontend
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+*.tsbuildinfo
+
 .idea
 *.iws
 *.iml

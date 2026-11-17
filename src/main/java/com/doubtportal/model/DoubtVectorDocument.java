@@ -1,7 +1,9 @@
 package com.doubtportal.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.Instant;
 import java.util.List;
 
 @Document(collection = "doubt_vectors")
@@ -12,6 +14,11 @@ public class DoubtVectorDocument {
     private String title;
     private List<Double> vectorEmbedding;
     private List<String> tags;
+    private Boolean active = true;
+    private Instant createdAt = Instant.now();
+
+    @Transient
+    private Double similarityScore;
 
     public DoubtVectorDocument() {}
 
@@ -20,6 +27,8 @@ public class DoubtVectorDocument {
         this.title = title;
         this.vectorEmbedding = vectorEmbedding;
         this.tags = tags;
+        this.active = true;
+        this.createdAt = Instant.now();
     }
 
     public String getId() { return id; }
@@ -32,4 +41,10 @@ public class DoubtVectorDocument {
     public void setVectorEmbedding(List<Double> vectorEmbedding) { this.vectorEmbedding = vectorEmbedding; }
     public List<String> getTags() { return tags; }
     public void setTags(List<String> tags) { this.tags = tags; }
+    public Boolean getActive() { return active; }
+    public void setActive(Boolean active) { this.active = active; }
+    public Instant getCreatedAt() { return createdAt; }
+    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public Double getSimilarityScore() { return similarityScore; }
+    public void setSimilarityScore(Double similarityScore) { this.similarityScore = similarityScore; }
 }

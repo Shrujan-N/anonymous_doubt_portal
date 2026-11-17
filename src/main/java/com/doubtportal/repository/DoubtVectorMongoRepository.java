@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface DoubtVectorMongoRepository extends MongoRepository<DoubtVectorDocument, String> {
     List<DoubtVectorDocument> findByTagsContaining(String tag);
+    List<DoubtVectorDocument> findAllByDoubtId(Long doubtId);
+    void deleteByDoubtId(Long doubtId);
 }

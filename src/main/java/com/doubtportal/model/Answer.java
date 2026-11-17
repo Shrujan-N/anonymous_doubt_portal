@@ -28,6 +28,9 @@ public class Answer {
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "deleted_by_admin_id")
+    private Long deletedByAdminId;
+
     public Answer() {}
 
     public Long getAnswerId() { return answerId; }
@@ -43,4 +46,6 @@ public class Answer {
     public Boolean getIsHelpful() { return isHelpful; }
     public void setIsHelpful(Boolean helpful) { isHelpful = helpful; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public Long getDeletedByAdminId() { return deletedByAdminId; }
+    public void setDeletedByAdminId(Long deletedByAdminId) { this.deletedByAdminId = deletedByAdminId; }
 }

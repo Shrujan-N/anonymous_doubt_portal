@@ -3,107 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anonymous Classroom Doubt Portal</title>
+    <title>Login - Anonymous Classroom Doubt Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<body class="bg-light min-vh-100 d-flex flex-column">
+    <nav class="navbar navbar-dark bg-dark py-3">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#">DoubtPortal</a>
-            <span class="navbar-text text-white">DBMS Level 3 Project</span>
+            <span class="navbar-brand fw-bold d-flex align-items-center gap-2">
+                <i class="bi bi-mortarboard-fill text-primary"></i> Anonymous Classroom Doubt Portal
+            </span>
+            <span class="badge bg-secondary-subtle text-light border border-secondary">PES University • DBMS Level 3</span>
         </div>
     </nav>
 
-    <div class="container my-4">
-        <div class="row">
-            <div class="col-md-5">
-                <div class="card shadow-sm mb-4">
-                    <div class="card-header bg-white font-weight-bold">Ask a Question</div>
-                    <div class="card-body">
-                        <form id="doubtForm">
-                            <div class="mb-3">
-                                <label class="form-label">Title</label>
-                                <input type="text" id="title" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Subject ID</label>
-                                <input type="number" id="subjectId" class="form-control" value="1" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Description</label>
-                                <textarea id="description" class="form-control" rows="3" required></textarea>
-                            </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="isAnonymous">
-                                <label class="form-check-label">Post Anonymously</label>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Submit Doubt</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-7">
+    <main class="container my-auto py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
                 <div class="card shadow-sm">
-                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0">Active Doubts Thread</h5>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="fetchDoubts()">Refresh</button>
+                    <div class="card-header bg-white py-3 border-bottom">
+                        <h5 class="mb-1 fw-bold text-dark">Sign in to Doubt Portal</h5>
+                        <p class="mb-0 small text-muted">Role-based access across Student, Faculty, and Admin views</p>
                     </div>
-                    <div class="card-body">
-                        <div id="doubtsList" class="list-group">
-                            <div class="text-center text-muted">Loading doubts...</div>
+                    <div class="card-body p-4">
+                        <div id="loginError" class="alert alert-danger d-none py-2 small" role="alert"></div>
+
+                        <form id="loginForm">
+                            <div class="mb-3">
+                                <label class="form-label fw-medium" for="role">Role</label>
+                                <select id="role" class="form-select">
+                                    <option value="STUDENT">Student</option>
+                                    <option value="TEACHER">Teacher / Faculty</option>
+                                    <option value="ADMIN">Admin Moderator</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium" for="email">University Email</label>
+                                <input type="email" id="email" class="form-control" placeholder="e.g., rahul@pes.edu" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium" for="password">Password</label>
+                                <input type="password" id="password" class="form-control" placeholder="Enter password" required>
+                            </div>
+                            <button type="submit" id="loginBtn" class="btn btn-primary w-100 py-2 fw-medium">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                            </button>
+                        </form>
+
+                        <hr class="my-4">
+
+                        <div class="small fw-semibold text-muted text-uppercase mb-2">
+                            <i class="bi bi-lightning-charge-fill text-warning"></i> Quick Viva Demo Login
+                        </div>
+                        <div class="d-grid gap-2">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary" onclick="demoLogin('rahul@pes.edu','hashed_pwd_1','STUDENT')">
+                                    Student (Rahul)
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="demoLogin('ananya@pes.edu','hashed_pwd_2','STUDENT')">
+                                    Student (Ananya)
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="demoLogin('vikram@pes.edu','hashed_pwd_3','STUDENT')">
+                                    Student (Vikram)
+                                </button>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-sm btn-outline-success w-100" onclick="demoLogin('sudhir@pes.edu','prof_pwd_1','TEACHER')">
+                                        <i class="bi bi-person-badge"></i> Teacher (Dr. Sudhir)
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="demoLogin('admin@pes.edu','admin_root_pwd','ADMIN')">
+                                        <i class="bi bi-shield-lock"></i> Admin (Root)
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
-        const API_URL = '/api/doubts';
+        const TOKEN_KEY = "doubtPortalAuthToken";
 
-        async function fetchDoubts() {
-            const res = await fetch(API_URL);
-            const doubts = await res.json();
-            const list = document.getElementById('doubtsList');
-            list.innerHTML = '';
-            
-            doubts.forEach(d => {
-                list.innerHTML += `
-                    <div class="list-group-item">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1">${d.title}</h6>
-                            <span class="badge bg-${d.status === 'Pending' ? 'warning' : 'success'}">${d.status}</span>
-                        </div>
-                        <p class="mb-1 text-secondary">${d.description || ''}</p>
-                        <small class="text-muted">Posted ${d.isAnonymous ? 'Anonymously' : 'by Student ID ' + d.studentId}</small>
-                    </div>
-                `;
-            });
+        async function performLogin(email, password, role) {
+            const errBox = document.getElementById("loginError");
+            errBox.classList.add("d-none");
+            try {
+                const res = await fetch("/api/auth/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: JSON.stringify({ email, password, role })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.error || "Invalid credentials.");
+                }
+                if (data.token) {
+                    sessionStorage.setItem(TOKEN_KEY, data.token);
+                }
+                window.location.href = "/dashboard.html";
+            } catch (err) {
+                errBox.textContent = err.message;
+                errBox.classList.remove("d-none");
+            }
         }
 
-        document.getElementById('doubtForm').addEventListener('submit', async (e) => {
+        function demoLogin(email, password, role) {
+            document.getElementById("email").value = email;
+            document.getElementById("password").value = password;
+            document.getElementById("role").value = role;
+            performLogin(email, password, role);
+        }
+
+        document.getElementById("loginForm").addEventListener("submit", (e) => {
             e.preventDefault();
-            const payload = {
-                studentId: 1,
-                subjectId: document.getElementById('subjectId').value,
-                title: document.getElementById('title').value,
-                description: document.getElementById('description').value,
-                isAnonymous: document.getElementById('isAnonymous').checked,
-                priority: 'Medium'
-            };
-
-            await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            document.getElementById('doubtForm').reset();
-            fetchDoubts();
+            performLogin(
+                document.getElementById("email").value.trim(),
+                document.getElementById("password").value,
+                document.getElementById("role").value
+            );
         });
 
-        fetchDoubts();
+        // Redirect straight to dashboard if session is already active
+        (async () => {
+            const token = sessionStorage.getItem(TOKEN_KEY);
+            const headers = token ? { "X-Auth-Token": token } : {};
+            try {
+                const res = await fetch("/api/auth/me", { credentials: "include", headers });
+                if (res.ok) {
+                    window.location.href = "/dashboard.html";
+                }
+            } catch (_) {}
+        })();
     </script>
 </body>
 </html>

@@ -1,0 +1,4 @@
+# Copy this file to application-local.properties and set your local MySQL password
+spring.datasource.username=root
+spring.datasource.password=YOUR_MYSQL_PASSWORD
+spring.data.mongodb.uri=mongodb://localhost:27017/doubt_portal_nosql
