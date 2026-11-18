@@ -306,43 +306,6 @@ export default function DashboardPage() {
     router.push("/");
   }
 
-  async function handleQuickSwitch(val: string) {
-    if (!val) return;
-    const [r, em, pwd] = val.split("|");
-    try {
-      await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-        headers: sessionStorage.getItem(TOKEN_KEY)
-          ? { "X-Auth-Token": sessionStorage.getItem(TOKEN_KEY) as string }
-          : {},
-      });
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role: r, email: em, password: pwd }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Unable to switch account.");
-      if (data.token) sessionStorage.setItem(TOKEN_KEY, data.token);
-      setUser(data);
-      setErrorMsg("");
-      setAnswerDrafts({});
-      setRelatedMap({});
-      setEditingVecId(null);
-      await loadDoubts();
-      await loadVectors();
-      await loadLeaderboard();
-      if (data.role === "ADMIN") {
-        await loadAuditLog();
-      }
-      notifySuccess(`Switched active session to ${data.name} (${data.role}).`);
-    } catch (err) {
-      notifyError(err instanceof Error ? err.message : "Switch failed.");
-    }
-  }
-
   async function handleCreateDoubt(e: React.FormEvent) {
     e.preventDefault();
     const tags = tagsInput
@@ -617,23 +580,6 @@ export default function DashboardPage() {
             >
               {user.role}: {user.name} {user.detail ? `• ${user.detail}` : ""}
             </span>
-
-            <select
-              aria-label="Viva Quick Switch Account"
-              defaultValue=""
-              onChange={(e) => {
-                handleQuickSwitch(e.target.value);
-                e.target.value = "";
-              }}
-              className="rounded-md bg-slate-800 border border-slate-700 text-xs text-slate-200 px-2.5 py-1.5"
-            >
-              <option value="">Viva Quick Switch...</option>
-              <option value="STUDENT|rahul@pes.edu|hashed_pwd_1">Student: Rahul Sharma</option>
-              <option value="STUDENT|ananya@pes.edu|hashed_pwd_2">Student: Ananya Rao</option>
-              <option value="STUDENT|vikram@pes.edu|hashed_pwd_3">Student: Vikram Verma</option>
-              <option value="TEACHER|sudhir@pes.edu|prof_pwd_1">Teacher: Dr. Sudhir Kumar</option>
-              <option value="ADMIN|admin@pes.edu|admin_root_pwd">Admin: System Admin</option>
-            </select>
 
             <button
               onClick={handleLogout}

@@ -105,36 +105,6 @@ function applyRoleUI() {
     }
 }
 
-async function quickSwitchAccount(value) {
-    if (!value) return;
-    const [role, email, password] = value.split("|");
-    try {
-        await fetch("/api/auth/logout", {
-            method: "POST",
-            credentials: "include",
-            headers: authHeaders()
-        });
-        const res = await fetch("/api/auth/login", {
-            method: "POST",
-            credentials: "include",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ role, email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Unable to switch user.");
-        sessionStorage.setItem(TOKEN_KEY, data.token || "");
-        currentUser = data;
-        document.getElementById("vivaQuickSwitch").value = "";
-        applyRoleUI();
-        await loadAllDoubts();
-        await loadLeaderboard();
-        await searchVectorsSemantic();
-        showSuccess(`Signed in as ${data.name} (${data.role}).`);
-    } catch (err) {
-        showError(err.message);
-    }
-}
-
 async function logout() {
     await fetch("/api/auth/logout", {
         method: "POST",

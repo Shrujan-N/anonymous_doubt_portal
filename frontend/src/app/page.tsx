@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { GraduationCap, LogIn, ShieldCheck, Sparkles, User, Users } from "lucide-react";
+import { GraduationCap, LogIn } from "lucide-react";
 
 const TOKEN_KEY = "doubtPortalAuthToken";
 
@@ -68,13 +68,6 @@ export default function LoginPage() {
     submitLogin(email, password, role);
   }
 
-  function handleDemoLogin(demoEmail: string, demoPwd: string, demoRole: Role) {
-    setRole(demoRole);
-    setEmail(demoEmail);
-    setPassword(demoPwd);
-    submitLogin(demoEmail, demoPwd, demoRole);
-  }
-
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <header className="bg-slate-900 text-white border-b border-slate-800">
@@ -83,9 +76,6 @@ export default function LoginPage() {
             <GraduationCap className="w-6 h-6 text-blue-400" />
             <span>Anonymous Classroom Doubt Portal</span>
           </div>
-          <span className="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-            PES University • DBMS Level 3
-          </span>
         </div>
       </header>
 
@@ -162,56 +152,6 @@ export default function LoginPage() {
                 {loading ? "Signing in..." : "Sign In"}
               </button>
             </form>
-
-            <div className="mt-6 pt-5 border-t border-slate-100">
-              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                Quick Viva Demo Login
-              </div>
-
-              <div className="space-y-2">
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin("rahul@pes.edu", "hashed_pwd_1", "STUDENT")}
-                    className="flex items-center justify-center gap-1 rounded-md border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium"
-                  >
-                    <User className="w-3.5 h-3.5" /> Rahul
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin("ananya@pes.edu", "hashed_pwd_2", "STUDENT")}
-                    className="flex items-center justify-center gap-1 rounded-md border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium"
-                  >
-                    <User className="w-3.5 h-3.5" /> Ananya
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin("vikram@pes.edu", "hashed_pwd_3", "STUDENT")}
-                    className="flex items-center justify-center gap-1 rounded-md border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium"
-                  >
-                    <User className="w-3.5 h-3.5" /> Vikram
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin("sudhir@pes.edu", "prof_pwd_1", "TEACHER")}
-                    className="flex items-center justify-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-700 py-1.5 px-2 text-xs font-medium"
-                  >
-                    <Users className="w-3.5 h-3.5" /> Faculty (Dr. Sudhir)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleDemoLogin("admin@pes.edu", "admin_root_pwd", "ADMIN")}
-                    className="flex items-center justify-center gap-1.5 rounded-md border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 py-1.5 px-2 text-xs font-medium"
-                  >
-                    <ShieldCheck className="w-3.5 h-3.5" /> Admin (Root)
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </main>
