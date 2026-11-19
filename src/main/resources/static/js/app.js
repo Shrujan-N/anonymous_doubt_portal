@@ -74,7 +74,6 @@ function applyRoleUI() {
     const roleAlert = document.getElementById("roleAlert");
     const roleAlertText = document.getElementById("roleAlertText");
     const postDoubtCard = document.getElementById("postDoubtCard");
-    const vectorCreateBox = document.getElementById("vectorCreateBox");
     const adminAuditCard = document.getElementById("adminAuditCard");
 
     if (role === "STUDENT") {
@@ -83,7 +82,6 @@ function applyRoleUI() {
         roleAlert.className = "alert alert-primary shadow-sm d-flex align-items-center gap-2";
         roleAlertText.innerHTML = `Active Mode: <strong>Student View</strong> — Post doubts (anonymously if preferred), write peer answers, and upvote solutions.`;
         postDoubtCard.style.display = "block";
-        vectorCreateBox.classList.add("d-none");
         adminAuditCard.classList.add("d-none");
     } else if (role === "TEACHER") {
         userInfo.className = "badge bg-success px-3 py-2";
@@ -91,7 +89,6 @@ function applyRoleUI() {
         roleAlert.className = "alert alert-warning shadow-sm d-flex align-items-center gap-2";
         roleAlertText.innerHTML = `Active Mode: <strong>Teacher View</strong> — Verify peer answers, post official explanations, close doubts, and curate topic tags.`;
         postDoubtCard.style.display = "none";
-        vectorCreateBox.classList.remove("d-none");
         adminAuditCard.classList.add("d-none");
     } else {
         userInfo.className = "badge bg-danger px-3 py-2";
@@ -99,9 +96,38 @@ function applyRoleUI() {
         roleAlert.className = "alert alert-secondary shadow-sm d-flex align-items-center gap-2";
         roleAlertText.innerHTML = `Active Mode: <strong>Admin Moderation View</strong> — Moderate archived threads, restore or permanently delete posts, and manage topic indexes.`;
         postDoubtCard.style.display = "none";
-        vectorCreateBox.classList.remove("d-none");
         adminAuditCard.classList.remove("d-none");
         loadAuditLog();
+    }
+}
+
+async function quickSwitchAccount(value) {
+    if (!value) return;
+    const [role, email, password] = value.split("|");
+    try {
+        await fetch("/api/auth/logout", {
+            method: "POST",
+            credentials: "include",
+            headers: authHeaders()
+        });
+        const res = await fetch("/api/auth/login", {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ role, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Unable to switch user.");
+        sessionStorage.setItem(TOKEN_KEY, data.token || "");
+        currentUser = data;
+        document.getElementById("quickSwitch").value = "";
+        applyRoleUI();
+        await loadAllDoubts();
+        await loadLeaderboard();
+        await searchVectorsSemantic();
+        showSuccess(`Signed in as ${data.name} (${data.role}).`);
+    } catch (err) {
+        showError(err.message);
     }
 }
 
@@ -310,13 +336,9 @@ async function loadAllDoubts() {
                                         ${authorText}
                                         <span><i class="bi bi-person-workspace"></i> Faculty: ${escapeHtml(doubt.teacherName || "Unassigned")}</span>
                                     </div>
-                                    <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" onclick="toggleRelatedDoubts(${safeId})">
-                                        <i class="bi bi-diagram-2"></i> Related Questions
-                                    </button>
                                 </div>
                                 ${tagsHtml ? `<div>${tagsHtml}</div>` : ""}
                             </div>
-                            <div id="relatedBox-${safeId}" class="d-none alert alert-info py-2 px-3 small mb-3"></div>
                             <h6 class="small fw-bold text-muted text-uppercase mb-2">Answers &amp; Solutions</h6>
                             ${teacherAnswersHtml}
                             ${studentAnswersHtml}
@@ -330,29 +352,6 @@ async function loadAllDoubts() {
     } catch (error) {
         container.innerHTML = `<div class="text-center text-danger py-4">${escapeHtml(error.message)}</div>`;
         showError(error.message);
-    }
-}
-
-async function toggleRelatedDoubts(doubtId) {
-    const box = document.getElementById(`relatedBox-${doubtId}`);
-    if (!box) return;
-    if (!box.classList.contains("d-none")) {
-        box.classList.add("d-none");
-        return;
-    }
-    try {
-        const res = await apiFetch(`/api/doubts/${doubtId}/related`);
-        if (!res.ok) throw new Error("Unable to fetch related discussions.");
-        const rows = await res.json();
-        if (rows.length === 0) {
-            box.innerHTML = "No related discussions found.";
-        } else {
-            box.innerHTML = `<div class="fw-semibold mb-1">Related Discussions by Topic</div>` +
-                rows.map(r => `<div>&bull; #${Number(r.doubtId)} ${escapeHtml(r.title)} (${Number(r.minTagHops)} ${Number(r.minTagHops) === 1 ? "hop" : "hops"} away)</div>`).join("");
-        }
-        box.classList.remove("d-none");
-    } catch (err) {
-        showError(err.message);
     }
 }
 
@@ -584,32 +583,6 @@ async function renderVectorResults(url, heading) {
         });
     } catch (error) {
         showError(error.message);
-    }
-}
-
-async function createVectorDocument() {
-    const rawDoubtId = document.getElementById("newVecDoubtId").value.trim();
-    const parsedDoubtId = rawDoubtId ? parseInt(rawDoubtId, 10) : null;
-    const doubtId = parsedDoubtId && parsedDoubtId > 0 ? parsedDoubtId : null;
-    const title = document.getElementById("newVecTitle").value.trim();
-    const tagsRaw = document.getElementById("newVecTags").value;
-    const tags = tagsRaw.split(",").map(s => s.trim()).filter(Boolean);
-    if (!title) return showError("Enter a title for the topic entry.");
-    try {
-        const res = await apiFetch("/api/nosql/vectors", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ doubtId, title, tags })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Unable to add topic entry.");
-        document.getElementById("newVecDoubtId").value = "";
-        document.getElementById("newVecTitle").value = "";
-        document.getElementById("newVecTags").value = "";
-        showSuccess("Topic entry added to search index!");
-        await searchVectorsSemantic();
-    } catch (err) {
-        showError(err.message);
     }
 }
 

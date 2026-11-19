@@ -68,6 +68,13 @@ export default function LoginPage() {
     submitLogin(email, password, role);
   }
 
+  function handleDemoLogin(demoEmail: string, demoPwd: string, demoRole: Role) {
+    setRole(demoRole);
+    setEmail(demoEmail);
+    setPassword(demoPwd);
+    submitLogin(demoEmail, demoPwd, demoRole);
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
       <header className="bg-slate-900 text-white border-b border-slate-800">
@@ -152,6 +159,55 @@ export default function LoginPage() {
                 {loading ? "Signing in..." : "Sign In"}
               </button>
             </form>
+
+            <div className="mt-6 pt-5 border-t border-slate-100">
+              <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2.5">
+                Quick Viva Login
+              </div>
+
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin("rahul@pes.edu", "hashed_pwd_1", "STUDENT")}
+                    className="rounded-md border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium"
+                  >
+                    Rahul
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin("ananya@pes.edu", "hashed_pwd_2", "STUDENT")}
+                    className="rounded-md border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium"
+                  >
+                    Ananya
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin("vikram@pes.edu", "hashed_pwd_3", "STUDENT")}
+                    className="rounded-md border border-blue-200 bg-blue-50/70 hover:bg-blue-100 text-blue-700 py-1.5 px-2 text-xs font-medium"
+                  >
+                    Vikram
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin("sudhir@pes.edu", "prof_pwd_1", "TEACHER")}
+                    className="rounded-md border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100 text-emerald-700 py-1.5 px-2 text-xs font-medium"
+                  >
+                    Faculty (Dr. Sudhir)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDemoLogin("admin@pes.edu", "admin_root_pwd", "ADMIN")}
+                    className="rounded-md border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-700 py-1.5 px-2 text-xs font-medium"
+                  >
+                    Admin (System Admin)
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>

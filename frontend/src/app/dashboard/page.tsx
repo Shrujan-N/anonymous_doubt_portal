@@ -9,7 +9,6 @@ import {
   ChevronDown,
   ChevronUp,
   Database,
-  GitBranch,
   GraduationCap,
   Lock,
   LogOut,
@@ -21,7 +20,6 @@ import {
   Search,
   Send,
   ShieldAlert,
-  Sparkles,
   ThumbsUp,
   Trash2,
   Trophy,
@@ -103,13 +101,6 @@ interface LeaderboardRow {
   score: number;
 }
 
-interface RelatedDoubtRow {
-  doubtId: number;
-  title: string;
-  minTagHops: number;
-  samplePath: string;
-}
-
 interface AuditData {
   deletedDoubts: Array<{
     doubtId: number;
@@ -138,7 +129,6 @@ export default function DashboardPage() {
   const [audit, setAudit] = useState<AuditData>({ deletedDoubts: [], deletedAnswers: [] });
 
   const [expandedId, setExpandedId] = useState<number | null>(null);
-  const [relatedMap, setRelatedMap] = useState<Record<number, RelatedDoubtRow[]>>({});
   const [answerDrafts, setAnswerDrafts] = useState<Record<number, string>>({});
 
   // Doubt filters & creation form
@@ -152,12 +142,9 @@ export default function DashboardPage() {
   const [description, setDescription] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
 
-  // Vector RUD controls
+  // Vector search & RUD controls
   const [vectorQuery, setVectorQuery] = useState("");
   const [vectorMode, setVectorMode] = useState<"semantic" | "tag">("semantic");
-  const [newVecDoubtId, setNewVecDoubtId] = useState("");
-  const [newVecTitle, setNewVecTitle] = useState("");
-  const [newVecTags, setNewVecTags] = useState("");
   const [editingVecId, setEditingVecId] = useState<string | null>(null);
   const [editingVecTags, setEditingVecTags] = useState("");
 
@@ -304,6 +291,42 @@ export default function DashboardPage() {
     }).catch(() => {});
     sessionStorage.removeItem(TOKEN_KEY);
     router.push("/");
+  }
+
+  async function handleQuickSwitch(val: string) {
+    if (!val) return;
+    const [r, em, pwd] = val.split("|");
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+        headers: sessionStorage.getItem(TOKEN_KEY)
+          ? { "X-Auth-Token": sessionStorage.getItem(TOKEN_KEY) as string }
+          : {},
+      });
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: r, email: em, password: pwd }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Unable to switch account.");
+      if (data.token) sessionStorage.setItem(TOKEN_KEY, data.token);
+      setUser(data);
+      setErrorMsg("");
+      setAnswerDrafts({});
+      setEditingVecId(null);
+      await loadDoubts();
+      await loadVectors();
+      await loadLeaderboard();
+      if (data.role === "ADMIN") {
+        await loadAuditLog();
+      }
+      notifySuccess(`Switched active session to ${data.name} (${data.role}).`);
+    } catch (err) {
+      notifyError(err instanceof Error ? err.message : "Switch failed.");
+    }
   }
 
   async function handleCreateDoubt(e: React.FormEvent) {
@@ -466,54 +489,6 @@ export default function DashboardPage() {
     }
   }
 
-  async function handleLoadRelated(doubtId: number) {
-    if (relatedMap[doubtId]) {
-      setRelatedMap((prev) => {
-        const next = { ...prev };
-        delete next[doubtId];
-        return next;
-      });
-      return;
-    }
-    const res = await apiFetch(`/api/doubts/${doubtId}/related`);
-    if (res.ok) {
-      const rows: RelatedDoubtRow[] = await res.json();
-      setRelatedMap((prev) => ({ ...prev, [doubtId]: rows }));
-    } else {
-      notifyError("Unable to load related discussions.");
-    }
-  }
-
-  async function handleCreateVector(e: React.FormEvent) {
-    e.preventDefault();
-    if (!newVecTitle.trim()) return notifyError("Topic title is required.");
-    const parsedDoubtId = newVecDoubtId.trim() ? parseInt(newVecDoubtId, 10) : null;
-    const tags = newVecTags
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-    try {
-      const res = await apiFetch("/api/nosql/vectors", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          doubtId: parsedDoubtId && parsedDoubtId > 0 ? parsedDoubtId : null,
-          title: newVecTitle.trim(),
-          tags,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Unable to add topic entry.");
-      setNewVecDoubtId("");
-      setNewVecTitle("");
-      setNewVecTags("");
-      notifySuccess("Topic entry added to search index!");
-      await loadVectors();
-    } catch (err) {
-      notifyError(err instanceof Error ? err.message : "Create failed.");
-    }
-  }
-
   async function handleSaveVectorTags(id: string) {
     const tags = editingVecTags
       .split(",")
@@ -580,6 +555,23 @@ export default function DashboardPage() {
             >
               {user.role}: {user.name} {user.detail ? `• ${user.detail}` : ""}
             </span>
+
+            <select
+              aria-label="Quick Switch Account"
+              defaultValue=""
+              onChange={(e) => {
+                handleQuickSwitch(e.target.value);
+                e.target.value = "";
+              }}
+              className="rounded-md bg-slate-800 border border-slate-700 text-xs text-slate-200 px-2.5 py-1.5"
+            >
+              <option value="">Quick Switch...</option>
+              <option value="STUDENT|rahul@pes.edu|hashed_pwd_1">Student: Rahul Sharma</option>
+              <option value="STUDENT|ananya@pes.edu|hashed_pwd_2">Student: Ananya Rao</option>
+              <option value="STUDENT|vikram@pes.edu|hashed_pwd_3">Student: Vikram Verma</option>
+              <option value="TEACHER|sudhir@pes.edu|prof_pwd_1">Teacher: Dr. Sudhir Kumar</option>
+              <option value="ADMIN|admin@pes.edu|admin_root_pwd">Admin: System Admin</option>
+            </select>
 
             <button
               onClick={handleLogout}
@@ -710,15 +702,15 @@ export default function DashboardPage() {
               </section>
             )}
 
-            {/* Smart Topic & Similarity Search */}
+            {/* MongoDB Vector Search */}
             <section className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between">
                 <div className="flex items-center gap-2 font-semibold text-sm text-slate-900">
                   <Database className="w-4 h-4 text-emerald-600" />
-                  Smart Topic &amp; Similarity Search
+                  Vector Search
                 </div>
                 <span className="text-[11px] font-medium px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  Vector Search
+                  MongoDB NoSQL
                 </span>
               </div>
 
@@ -740,9 +732,9 @@ export default function DashboardPage() {
                   />
                   <button
                     type="submit"
-                    className="flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold"
+                    className="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 text-xs font-semibold"
                   >
-                    <Sparkles className="w-3.5 h-3.5" /> Similar
+                    Similar
                   </button>
                   <button
                     type="button"
@@ -755,48 +747,6 @@ export default function DashboardPage() {
                     Tag
                   </button>
                 </form>
-
-                {canManageVectors && (
-                  <form
-                    onSubmit={handleCreateVector}
-                    className="rounded-lg border border-slate-200 bg-slate-50 p-3 space-y-2"
-                  >
-                    <div className="text-xs font-semibold text-slate-700">
-                      Add Topic Index Entry
-                    </div>
-                    <div className="grid grid-cols-3 gap-2">
-                      <input
-                        type="number"
-                        value={newVecDoubtId}
-                        onChange={(e) => setNewVecDoubtId(e.target.value)}
-                        placeholder="Doubt ID"
-                        className="rounded border border-slate-300 px-2 py-1 text-xs bg-white"
-                      />
-                      <input
-                        type="text"
-                        value={newVecTitle}
-                        onChange={(e) => setNewVecTitle(e.target.value)}
-                        placeholder="Topic title"
-                        className="col-span-2 rounded border border-slate-300 px-2 py-1 text-xs bg-white"
-                      />
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={newVecTags}
-                        onChange={(e) => setNewVecTags(e.target.value)}
-                        placeholder="Tags (comma-separated)"
-                        className="flex-1 rounded border border-slate-300 px-2 py-1 text-xs bg-white"
-                      />
-                      <button
-                        type="submit"
-                        className="rounded bg-slate-800 hover:bg-slate-900 text-white px-3 py-1 text-xs font-semibold"
-                      >
-                        Index
-                      </button>
-                    </div>
-                  </form>
-                )}
 
                 <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                   {vectors.length === 0 ? (
@@ -1010,7 +960,6 @@ export default function DashboardPage() {
                   doubts.map((doubt) => {
                     const isOpen = expandedId === doubt.doubtId;
                     const isClosed = doubt.status === "Closed";
-                    const relatedList = relatedMap[doubt.doubtId];
 
                     return (
                       <article
@@ -1074,14 +1023,6 @@ export default function DashboardPage() {
                               <p>{doubt.description || "No detailed description provided."}</p>
                               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
                                 <span>Faculty: {doubt.teacherName || "Unassigned"}</span>
-                                <button
-                                  type="button"
-                                  onClick={() => handleLoadRelated(doubt.doubtId)}
-                                  className="inline-flex items-center gap-1 text-indigo-700 hover:underline font-medium"
-                                >
-                                  <GitBranch className="w-3.5 h-3.5" />
-                                  {relatedList ? "Hide Related Questions" : "Related Questions"}
-                                </button>
                               </div>
                               {doubt.tags?.length > 0 && (
                                 <div className="flex flex-wrap gap-1.5">
@@ -1096,24 +1037,6 @@ export default function DashboardPage() {
                                 </div>
                               )}
                             </div>
-
-                            {relatedList && (
-                              <div className="rounded-lg border border-indigo-200 bg-indigo-50/60 p-2.5 text-xs space-y-1">
-                                <div className="font-semibold text-indigo-900">
-                                  Related Discussions by Topic
-                                </div>
-                                {relatedList.length === 0 ? (
-                                  <div className="text-indigo-700">No related discussions found.</div>
-                                ) : (
-                                  relatedList.map((rel) => (
-                                    <div key={rel.doubtId} className="text-indigo-800">
-                                      • #{rel.doubtId} {rel.title} ({rel.minTagHops}{" "}
-                                      {rel.minTagHops === 1 ? "hop" : "hops"} away)
-                                    </div>
-                                  ))
-                                )}
-                              </div>
-                            )}
 
                             {/* Verified Faculty Answers */}
                             {doubt.teacherAnswers?.map((ta) => (

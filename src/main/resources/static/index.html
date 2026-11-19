@@ -49,6 +49,35 @@
                                 <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
                             </button>
                         </form>
+
+                        <hr class="my-4">
+
+                        <div class="small fw-semibold text-muted text-uppercase mb-2">Quick Viva Login</div>
+                        <div class="d-grid gap-2">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-outline-primary" onclick="demoLogin('rahul@pes.edu','hashed_pwd_1','STUDENT')">
+                                    Rahul
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="demoLogin('ananya@pes.edu','hashed_pwd_2','STUDENT')">
+                                    Ananya
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="demoLogin('vikram@pes.edu','hashed_pwd_3','STUDENT')">
+                                    Vikram
+                                </button>
+                            </div>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-sm btn-outline-success w-100" onclick="demoLogin('sudhir@pes.edu','prof_pwd_1','TEACHER')">
+                                        Faculty (Dr. Sudhir)
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-sm btn-outline-danger w-100" onclick="demoLogin('admin@pes.edu','admin_root_pwd','ADMIN')">
+                                        Admin (System Admin)
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -80,6 +109,13 @@
                 errBox.textContent = err.message;
                 errBox.classList.remove("d-none");
             }
+        }
+
+        function demoLogin(email, password, role) {
+            document.getElementById("email").value = email;
+            document.getElementById("password").value = password;
+            document.getElementById("role").value = role;
+            performLogin(email, password, role);
         }
 
         document.getElementById("loginForm").addEventListener("submit", (e) => {
